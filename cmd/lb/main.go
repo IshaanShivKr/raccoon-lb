@@ -14,12 +14,24 @@ import (
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
+	"github.com/IshaanShivKr/raccoon-lb/internal/health"
 	"github.com/IshaanShivKr/raccoon-lb/internal/proxy"
 )
 
 const (
 	listenAddr      = ":8080"
 	shutdownTimeout = 10 * time.Second
+
+	readHeaderTimeout = 5 * time.Second
+	readTimeout       = 15 * time.Second
+	writeTimeout      = 60 * time.Second
+	idleTimeout       = 60 * time.Second
+
+	healthInterval = 5 * time.Second
+	healthTimeout  = 2 * time.Second
+	healthPath     = "/"
+	healthFall     = 3
+	healthRise     = 2
 )
 
 func main() {
@@ -53,13 +65,26 @@ func run(logger *slog.Logger) error {
 	lb := balancer.NewRoundRobin(pool)
 	handler := proxy.New(lb, logger)
 
+	checker, err := health.New(
+		pool,
+		logger,
+		healthInterval,
+		healthTimeout,
+		healthPath,
+		healthFall,
+		healthRise,
+	)
+	if err != nil {
+		return fmt.Errorf("create health checker: %w", err)
+	}
+
 	server := &http.Server{
 		Addr:              listenAddr,
 		Handler:           handler,
-		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      30 * time.Second,
-		IdleTimeout:       60 * time.Second,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
 	}
 
 	ctx, stop := signal.NotifyContext(
@@ -67,7 +92,17 @@ func run(logger *slog.Logger) error {
 		os.Interrupt,
 		syscall.SIGTERM,
 	)
-	defer stop()
+
+	healthDone := make(chan struct{})
+	go func() {
+		defer close(healthDone)
+		checker.Run(ctx)
+	}()
+
+	defer func() {
+		stop()
+		<-healthDone
+	}()
 
 	serverErr := make(chan error, 1)
 

@@ -1,7 +1,5 @@
 package backend
 
-import "net/url"
-
 type Pool struct {
 	backends []*Backend
 }
@@ -28,17 +26,4 @@ func (p *Pool) Healthy() []*Backend {
 	}
 
 	return out
-}
-
-func (p *Pool) SetHealth(target *url.URL, healthy bool) bool {
-	want := target.String()
-
-	for _, b := range p.backends {
-		if b.URL.String() == want {
-			b.SetHealthy(healthy)
-			return true
-		}
-	}
-
-	return false
 }
