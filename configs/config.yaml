@@ -1,0 +1,19 @@
+server:
+  address: ":8080"
+  read_header_timeout: 5s
+  read_timeout: 15s
+  write_timeout: 60s
+  idle_timeout: 60s
+  shutdown_timeout: 10s
+
+backends:
+  - http://localhost:9001
+  - http://localhost:9002
+  - http://localhost:9003
+
+health:
+  interval: 5s
+  timeout: 2s
+  path: /
+  fall_threshold: 3
+  rise_threshold: 2

@@ -6,58 +6,39 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
+	"github.com/IshaanShivKr/raccoon-lb/internal/config"
 	"github.com/IshaanShivKr/raccoon-lb/internal/health"
 	"github.com/IshaanShivKr/raccoon-lb/internal/proxy"
 )
 
-const (
-	listenAddr      = ":8080"
-	shutdownTimeout = 10 * time.Second
-
-	readHeaderTimeout = 5 * time.Second
-	readTimeout       = 15 * time.Second
-	writeTimeout      = 60 * time.Second
-	idleTimeout       = 60 * time.Second
-
-	healthInterval = 5 * time.Second
-	healthTimeout  = 2 * time.Second
-	healthPath     = "/"
-	healthFall     = 3
-	healthRise     = 2
-)
+const configPath = "configs/config.yaml"
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 
-	if err := run(logger); err != nil {
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		logger.Error("failed to load configuration", "error", err)
+		os.Exit(1)
+	}
+
+	if err := run(logger, cfg); err != nil {
 		logger.Error("application failed", "error", err)
 		os.Exit(1)
 	}
 }
 
-func run(logger *slog.Logger) error {
-	targets := []string{
-		"http://localhost:9001",
-		"http://localhost:9002",
-		"http://localhost:9003",
-	}
-
-	backends := make([]*backend.Backend, 0, len(targets))
-	for _, t := range targets {
-		u, err := url.Parse(t)
-		if err != nil {
-			return fmt.Errorf("parse backend %q: %w", t, err)
-		}
+func run(logger *slog.Logger, cfg *config.Config) error {
+	backends := make([]*backend.Backend, 0, len(cfg.BackendURLs))
+	for _, u := range cfg.BackendURLs {
 		backends = append(backends, &backend.Backend{URL: u})
 	}
 
@@ -68,23 +49,23 @@ func run(logger *slog.Logger) error {
 	checker, err := health.New(
 		pool,
 		logger,
-		healthInterval,
-		healthTimeout,
-		healthPath,
-		healthFall,
-		healthRise,
+		cfg.Health.Interval,
+		cfg.Health.Timeout,
+		cfg.Health.Path,
+		cfg.Health.FallThreshold,
+		cfg.Health.RiseThreshold,
 	)
 	if err != nil {
 		return fmt.Errorf("create health checker: %w", err)
 	}
 
 	server := &http.Server{
-		Addr:              listenAddr,
+		Addr:              cfg.Server.Address,
 		Handler:           handler,
-		ReadHeaderTimeout: readHeaderTimeout,
-		ReadTimeout:       readTimeout,
-		WriteTimeout:      writeTimeout,
-		IdleTimeout:       idleTimeout,
+		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
+		ReadTimeout:       cfg.Server.ReadTimeout,
+		WriteTimeout:      cfg.Server.WriteTimeout,
+		IdleTimeout:       cfg.Server.IdleTimeout,
 	}
 
 	ctx, stop := signal.NotifyContext(
@@ -126,12 +107,12 @@ func run(logger *slog.Logger) error {
 
 	case <-ctx.Done():
 		stop()
-		logger.Info("shutdown signal received, shutting down server", "timeout", shutdownTimeout)
+		logger.Info("shutdown signal received, shutting down server", "timeout", cfg.Server.ShutdownTimeout)
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(
 		context.Background(),
-		shutdownTimeout,
+		cfg.Server.ShutdownTimeout,
 	)
 	defer cancel()
 
