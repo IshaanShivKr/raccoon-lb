@@ -6,13 +6,21 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
+	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
+	"github.com/IshaanShivKr/raccoon-lb/internal/proxy"
 )
 
-const shutdownTimeout = 10 * time.Second
+const (
+	listenAddr      = ":8080"
+	shutdownTimeout = 10 * time.Second
+)
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -26,21 +34,28 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	mux := http.NewServeMux()
+	targets := []string{
+		"http://localhost:9001",
+		"http://localhost:9002",
+		"http://localhost:9003",
+	}
 
-	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("request received",
-			"method", r.Method,
-			"path", r.URL.Path,
-			"remote_addr", r.RemoteAddr,
-		)
+	backends := make([]*backend.Backend, 0, len(targets))
+	for _, t := range targets {
+		u, err := url.Parse(t)
+		if err != nil {
+			return fmt.Errorf("parse backend %q: %w", t, err)
+		}
+		backends = append(backends, &backend.Backend{URL: u})
+	}
 
-		_, _ = w.Write([]byte("Raccoon LB is running\n"))
-	})
+	pool := backend.NewPool(backends)
+	lb := balancer.NewRoundRobin(pool)
+	handler := proxy.New(lb, logger)
 
 	server := &http.Server{
-		Addr:              ":8080",
-		Handler:           mux,
+		Addr:              listenAddr,
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
@@ -57,7 +72,7 @@ func run(logger *slog.Logger) error {
 	serverErr := make(chan error, 1)
 
 	go func() {
-		logger.Info("starting HTTP server", "address", server.Addr)
+		logger.Info("starting HTTP server", "address", server.Addr, "backends", len(backends))
 
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErr <- err
