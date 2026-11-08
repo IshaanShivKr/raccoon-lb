@@ -8,9 +8,9 @@ type Pool struct {
 }
 
 func NewPool(backends []*Backend) *Pool {
-	return &Pool{
-		backends: backends,
-	}
+	b := make([]*Backend, len(backends))
+	copy(b, backends)
+	return &Pool{backends: b}
 }
 
 func (p *Pool) All() []*Backend {

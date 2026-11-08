@@ -11,6 +11,8 @@ type RoundRobin struct {
 	counter atomic.Uint64
 }
 
+var _ Balancer = (*RoundRobin)(nil)
+
 func NewRoundRobin(pool *backend.Pool) *RoundRobin {
 	return &RoundRobin{
 		pool: pool,
