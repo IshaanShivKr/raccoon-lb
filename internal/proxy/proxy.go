@@ -14,6 +14,15 @@ import (
 
 type ctxKey struct{}
 
+func withBackend(ctx context.Context, be *backend.Backend) context.Context {
+	return context.WithValue(ctx, ctxKey{}, be)
+}
+
+func backendFrom(ctx context.Context) (*backend.Backend, bool) {
+	be, ok := ctx.Value(ctxKey{}).(*backend.Backend)
+	return be, ok && be != nil
+}
+
 type Proxy struct {
 	balancer balancer.Balancer
 	logger   *slog.Logger
@@ -28,7 +37,12 @@ func New(b balancer.Balancer, logger *slog.Logger) *Proxy {
 
 	p.rp = &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
-			be := pr.In.Context().Value(ctxKey{}).(*backend.Backend)
+			be, ok := backendFrom(pr.In.Context())
+			if !ok {
+				p.logger.Error("backend missing from request context")
+				return
+			}
+
 			pr.SetURL(be.URL)
 			pr.SetXForwarded()
 		},
@@ -51,8 +65,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), ctxKey{}, be)
-	p.rp.ServeHTTP(w, r.WithContext(ctx))
+	p.rp.ServeHTTP(w, r.WithContext(withBackend(r.Context(), be)))
 }
 
 func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {
@@ -61,7 +74,7 @@ func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	backendURL := "unknown"
-	if be, ok := r.Context().Value(ctxKey{}).(*backend.Backend); ok {
+	if be, ok := backendFrom(r.Context()); ok {
 		backendURL = be.URL.String()
 	}
 
