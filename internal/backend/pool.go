@@ -1,9 +1,8 @@
 package backend
 
-import "sync"
+import "net/url"
 
 type Pool struct {
-	mu       sync.RWMutex
 	backends []*Backend
 }
 
@@ -14,11 +13,32 @@ func NewPool(backends []*Backend) *Pool {
 }
 
 func (p *Pool) All() []*Backend {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
+	out := make([]*Backend, len(p.backends))
+	copy(out, p.backends)
+	return out
+}
 
-	backends := make([]*Backend, len(p.backends))
-	copy(backends, p.backends)
+func (p *Pool) Healthy() []*Backend {
+	out := make([]*Backend, 0, len(p.backends))
 
-	return backends
+	for _, b := range p.backends {
+		if b.IsHealthy() {
+			out = append(out, b)
+		}
+	}
+
+	return out
+}
+
+func (p *Pool) SetHealth(target *url.URL, healthy bool) bool {
+	want := target.String()
+
+	for _, b := range p.backends {
+		if b.URL.String() == want {
+			b.SetHealthy(healthy)
+			return true
+		}
+	}
+
+	return false
 }

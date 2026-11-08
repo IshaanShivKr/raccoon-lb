@@ -20,7 +20,7 @@ func NewRoundRobin(pool *backend.Pool) *RoundRobin {
 }
 
 func (rr *RoundRobin) Next() (*backend.Backend, error) {
-	backends := rr.pool.All()
+	backends := rr.pool.Healthy()
 
 	if len(backends) == 0 {
 		return nil, ErrNoHealthyBackends

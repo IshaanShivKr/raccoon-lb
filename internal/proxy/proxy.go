@@ -29,6 +29,8 @@ type Proxy struct {
 	rp       *httputil.ReverseProxy
 }
 
+var _ http.Handler = (*Proxy)(nil)
+
 func New(b balancer.Balancer, logger *slog.Logger) *Proxy {
 	p := &Proxy{
 		balancer: b,
@@ -93,5 +95,3 @@ func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {
 
 	http.Error(w, "upstream server error", http.StatusBadGateway)
 }
-
-var _ http.Handler = (*Proxy)(nil)
