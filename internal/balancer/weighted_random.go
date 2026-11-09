@@ -2,7 +2,6 @@ package balancer
 
 import (
 	"math/rand"
-	"net/http"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 )
@@ -19,7 +18,7 @@ func NewWeightedRandom(pool *backend.Pool) *WeightedRandom {
 	}
 }
 
-func (wr *WeightedRandom) Next(_ *http.Request) (*backend.Backend, error) {
+func (wr *WeightedRandom) Next() (*backend.Backend, error) {
 	backends := wr.pool.Available()
 	if len(backends) == 0 {
 		return nil, ErrNoAvailableBackends

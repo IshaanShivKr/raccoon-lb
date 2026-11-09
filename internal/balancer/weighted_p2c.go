@@ -2,7 +2,6 @@ package balancer
 
 import (
 	"math/rand"
-	"net/http"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 )
@@ -17,7 +16,7 @@ func NewWeightedP2C(pool *backend.Pool) *WeightedP2C {
 	return &WeightedP2C{pool: pool}
 }
 
-func (p *WeightedP2C) Next(_ *http.Request) (*backend.Backend, error) {
+func (p *WeightedP2C) Next() (*backend.Backend, error) {
 	backends := p.pool.Available()
 	if len(backends) == 0 {
 		return nil, ErrNoAvailableBackends

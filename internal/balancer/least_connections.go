@@ -1,7 +1,6 @@
 package balancer
 
 import (
-	"net/http"
 	"sync/atomic"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
@@ -18,7 +17,7 @@ func NewLeastConnections(pool *backend.Pool) *LeastConnections {
 	return &LeastConnections{pool: pool}
 }
 
-func (lc *LeastConnections) Next(_ *http.Request) (*backend.Backend, error) {
+func (lc *LeastConnections) Next() (*backend.Backend, error) {
 	backends := lc.pool.Available()
 
 	if len(backends) == 0 {

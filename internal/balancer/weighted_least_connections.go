@@ -1,7 +1,6 @@
 package balancer
 
 import (
-	"net/http"
 	"sync/atomic"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
@@ -18,7 +17,7 @@ func NewWeightedLeastConnections(pool *backend.Pool) *WeightedLeastConnections {
 	return &WeightedLeastConnections{pool: pool}
 }
 
-func (wlc *WeightedLeastConnections) Next(_ *http.Request) (*backend.Backend, error) {
+func (wlc *WeightedLeastConnections) Next() (*backend.Backend, error) {
 	backends := wlc.pool.Available()
 	if len(backends) == 0 {
 		return nil, ErrNoAvailableBackends

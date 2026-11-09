@@ -2,7 +2,6 @@ package balancer
 
 import (
 	"math/rand"
-	"net/http"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 )
@@ -19,7 +18,7 @@ func NewPowerOfTwoChoices(pool *backend.Pool) *PowerOfTwoChoices {
 	}
 }
 
-func (p *PowerOfTwoChoices) Next(_ *http.Request) (*backend.Backend, error) {
+func (p *PowerOfTwoChoices) Next() (*backend.Backend, error) {
 	backends := p.pool.Available()
 	if len(backends) == 0 {
 		return nil, ErrNoAvailableBackends

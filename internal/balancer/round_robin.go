@@ -1,7 +1,6 @@
 package balancer
 
 import (
-	"net/http"
 	"sync/atomic"
 
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
@@ -18,7 +17,7 @@ func NewRoundRobin(pool *backend.Pool) *RoundRobin {
 	return &RoundRobin{pool: pool}
 }
 
-func (rr *RoundRobin) Next(_ *http.Request) (*backend.Backend, error) {
+func (rr *RoundRobin) Next() (*backend.Backend, error) {
 	backends := rr.pool.Available()
 
 	if len(backends) == 0 {
