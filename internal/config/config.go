@@ -20,6 +20,7 @@ const (
 	AlgorithmWeightedRoundRobin       = "weighted_round_robin"
 	AlgorithmWeightedLeastConnections = "weighted_least_connections"
 	AlgorithmRandom                   = "random"
+	AlgorithmP2C                      = "p2c"
 )
 
 type Config struct {
@@ -133,7 +134,8 @@ func (c *Config) validate() error {
 		AlgorithmLeastConnections,
 		AlgorithmWeightedRoundRobin,
 		AlgorithmWeightedLeastConnections,
-		AlgorithmRandom:
+		AlgorithmRandom,
+		AlgorithmP2C:
 	default:
 		addf("unsupported balancing algorithm: %q", c.Balancer.Algorithm)
 	}

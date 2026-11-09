@@ -65,6 +65,9 @@ func run(logger *slog.Logger, cfg *config.Config) error {
 
 	case config.AlgorithmRandom:
 		lb = balancer.NewRandom(pool)
+
+	case config.AlgorithmP2C:
+		lb = balancer.NewPowerOfTwoChoices(pool)
 	}
 
 	handler := middleware.Logging(logger, proxy.New(lb, logger))
