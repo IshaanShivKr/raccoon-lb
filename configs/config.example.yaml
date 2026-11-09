@@ -20,6 +20,6 @@ backends:
 health:
   interval: 5s
   timeout: 2s
-  path: /
+  path: /health
   fall_threshold: 3
   rise_threshold: 2
