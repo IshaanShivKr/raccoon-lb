@@ -14,7 +14,7 @@ help:
 
 build:
 	mkdir -p bin
-	go build -trimpath -o bin/raccoon-lb ./cmd/raccoon-lb
+	CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o bin/raccoon-lb ./cmd/raccoon-lb
 
 run:
 	go run ./cmd/raccoon-lb -config $(CONFIG)

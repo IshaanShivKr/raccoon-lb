@@ -73,7 +73,7 @@ Make the binary executable:
 chmod +x raccoon-lb
 ```
 
-### Option 3: Build Docker image from GitHub
+### Option 2: Build Docker image from GitHub
 
 Build the Docker image from the GitHub repository:
 
@@ -81,7 +81,7 @@ Build the Docker image from the GitHub repository:
 docker build -t raccoon-lb https://github.com/IshaanShivKr/raccoon-lb.git
 ```
 
-### Option 4: Install using Go
+### Option 3: Install using Go
 
 Requires Go 1.27.3 or later.
 
@@ -92,6 +92,34 @@ go install github.com/IshaanShivKr/raccoon-lb/cmd/raccoon-lb@latest
 ```
 
 Ensure that your Go binary directory (`$(go env GOPATH)/bin`) is included in your system's `PATH`.
+
+### Option 4: Build from Source
+
+Requirements:
+- Go 1.27.3 or later
+- Git
+- Make (optional)
+
+Clone the repository:
+
+```bash
+git clone https://github.com/IshaanShivKr/raccoon-lb.git
+cd raccoon-lb
+```
+
+Build the binary:
+
+```bash
+make build
+```
+
+If you don't have Make, build the binary directly with Go:
+
+```bash
+CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o bin/raccoon-lb ./cmd/raccoon-lb
+```
+
+This creates the binary at `bin/raccoon-lb`.
 
 ## Create your configuration file
 
@@ -104,15 +132,37 @@ cp config.example.yaml config.yaml
 
 Alternatively, you can download config.example.yaml directly from the [GitHub repository](https://github.com/IshaanShivKr/raccoon-lb/blob/main/configs/config.example.yaml).
 
+If you built Raccoon LB from source (Option 4), the example configuration is already available in the configs/ directory. Copy it to your working directory:
+
+```bash
+cp configs/config.example.yaml config.yaml
+```
+
 Edit config.yaml to configure your backend servers and load-balancing algorithm. See [Configuration](#configuration) for details about all available fields.
 
 ## Run Raccoon LB
 
-### Run the binary:
+### Run the binary
 
-```bash
-./raccoon-lb -config config.yaml
-```
+Use the command that matches how you installed it:
+
+- **Prebuilt binary:**
+
+  ```bash
+  ./raccoon-lb -config config.yaml
+  ```
+
+- **Installed with `go install`:** the binary is on your `PATH`, so no `./` is needed.
+
+  ```bash
+  raccoon-lb -config config.yaml
+  ```
+
+- **Built from source:** the binary is in `bin/`.
+
+  ```bash
+  ./bin/raccoon-lb -config config.yaml
+  ```
 
 ### Run with Docker:
 
@@ -137,12 +187,6 @@ To stop and remove the container:
 
 ```bash
 docker stop raccoon-lb && docker rm raccoon-lb
-```
-
-### Run with Go:
-
-```bash
-raccoon-lb -config config.yaml
 ```
 
 ## Usage
