@@ -1,13 +1,12 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build build-linux-amd64 build-linux-arm64 run clean fmt vet check tidy deps all
+.PHONY: help build build-linux-amd64 run clean fmt vet check tidy deps all
 
 help:
 	@echo "Raccoon LB"
 	@echo "  make build              - Build binary for current platform"
 	@echo "  make build-linux-amd64  - Build Linux AMD64 binary"
-	@echo "  make build-linux-arm64  - Build Linux ARM64 binary"
 	@echo "  make run                - Run application"
 	@echo "  make clean              - Remove build artifacts"
 	@echo "  make fmt                - Format Go files"
@@ -23,10 +22,6 @@ build:
 build-linux-amd64:
 	mkdir -p dist
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o dist/raccoon-lb-linux-amd64 ./cmd/lb
-
-build-linux-arm64:
-	mkdir -p dist
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/raccoon-lb-linux-arm64 ./cmd/lb
 
 run:
 	go run ./cmd/lb
