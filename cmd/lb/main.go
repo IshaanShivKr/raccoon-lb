@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -18,15 +19,21 @@ import (
 	"github.com/IshaanShivKr/raccoon-lb/internal/proxy"
 )
 
-const configPath = "configs/config.yaml"
+var configPath = flag.String(
+    "config",
+    "configs/config.yaml",
+    "path to configuration file",
+)
 
 func main() {
+	flag.Parse()
+
 	level := new(slog.LevelVar)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: level,
 	}))
 
-	cfg, err := config.Load(configPath)
+	cfg, err := config.Load(*configPath)
 	if err != nil {
 		logger.Error("failed to load configuration", "error", err)
 		os.Exit(1)
