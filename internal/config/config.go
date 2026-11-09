@@ -26,12 +26,11 @@ const (
 )
 
 type Config struct {
-	Server      ServerConfig    `yaml:"server"`
-	Backends    []BackendConfig `yaml:"backends"`
-	Balancer    BalancerConfig  `yaml:"balancer"`
-	Health      HealthConfig    `yaml:"health"`
-	Log         LogConfig       `yaml:"log"`
-	BackendURLs []*url.URL      `yaml:"-"`
+	Server   ServerConfig    `yaml:"server"`
+	Backends []BackendConfig `yaml:"backends"`
+	Balancer BalancerConfig  `yaml:"balancer"`
+	Health   HealthConfig    `yaml:"health"`
+	Log      LogConfig       `yaml:"log"`
 }
 
 type ServerConfig struct {
