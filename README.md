@@ -111,11 +111,12 @@ docker run -d \
   raccoon-lb
 ```
 
-Verify that it started:
+Check the container logs:
 
 ```bash
 docker logs raccoon-lb
 ```
+
 
 To stop and remove the container:
 
@@ -123,13 +124,7 @@ To stop and remove the container:
 docker stop raccoon-lb && docker rm raccoon-lb
 ```
 
-Raccoon LB is now available on port 8080 of the machine running Docker (for example, `http://localhost:8080` locally, or `http://<server-ip>:8080` on a remote server). If the server has a firewall or cloud security group, allow inbound traffic on port 8080.
-
-> **Note:**
-> - Inside a container, `localhost` refers to the container itself, not the Docker host. Remote backends (AWS, Render, etc.) work with their normal URLs or IP addresses.
-> - For backends running on the Docker host, use the host's IP address. On Linux, you can instead add `--add-host=host.docker.internal:host-gateway` to the `docker run` command and use `host.docker.internal` in the backend URL.
-> - The `-p 8080:8080` mapping assumes your configuration uses port 8080. If you change the listening port, update the container-side port accordingly.
-> - If the container exits with a permission error, make sure `config.yaml` is readable by others: `chmod 644 config.yaml`.
+Raccoon LB is now accessible on port 8080 of the machine running Docker. Ensure the port is allowed through your firewall or cloud security group
 
 
 ## Configuration
