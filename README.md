@@ -2,6 +2,26 @@
 
 A Layer 7 HTTP load balancer and reverse proxy written in Go.
 
+Raccoon LB distributes incoming HTTP requests across multiple backend servers using configurable load-balancing algorithms. It includes active health checking, weighted backend selection, concurrent request handling, and graceful shutdown.
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Features](#features)
+- [Load-Balancing Algorithms](#load-balancing-algorithms)
+- [Installation](#installation)
+  - [Option 1: Download a prebuilt binary](#option-1-download-a-prebuilt-binary)
+- [Configuration](#configuration)
+  - [Server](#server)
+  - [Balancer](#balancer)
+  - [Backends](#backends)
+  - [Health Checking](#health-checking)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [License](#license)
+
+<!-- END doctoc -->
+
 ## Features
 
 - Eight load-balancing algorithms (four standard and four weighted variants).
