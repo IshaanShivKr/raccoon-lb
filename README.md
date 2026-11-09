@@ -191,15 +191,23 @@ docker stop raccoon-lb && docker rm raccoon-lb
 
 ## Usage
 
-Once Raccoon LB is running, send HTTP requests to its listening address.
-
-For example:
+Once Raccoon LB is running, send HTTP requests to the address set in `server.address` (port 8080 in the example configuration):
 
 ```bash
-curl http://localhost:8080/foo/bar
+curl http://localhost:8080/
 ```
 
-Raccoon LB forwards the request to a selected backend, preserving the request path.
+Raccoon LB forwards each request to a healthy backend, preserving the request path, so `http://localhost:8080/foo/bar` reaches `/foo/bar` on the selected backend.
+
+To see load balancing in action, send several requests and watch them spread across your backends:
+
+```bash
+for i in {1..6}; do curl -s http://localhost:8080/; echo; done
+```
+
+How requests are distributed depends on the configured [algorithm](#load-balancing-algorithms) and backend weights. 
+
+If requests fail, check that your backends are running and return `200 OK` on the [health check path](#health-checking). A backend that fails its checks is logged as `backend unhealthy` and removed from rotation. If no backend is healthy, Raccoon LB returns an error response instead of forwarding the request.
 
 ## Configuration
 
