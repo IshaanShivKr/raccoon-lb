@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"strconv"
@@ -17,6 +18,7 @@ type Config struct {
 	Server      ServerConfig `yaml:"server"`
 	Backends    []string     `yaml:"backends"`
 	Health      HealthConfig `yaml:"health"`
+	Log         LogConfig    `yaml:"log"`
 	BackendURLs []*url.URL   `yaml:"-"`
 }
 
@@ -35,6 +37,10 @@ type HealthConfig struct {
 	Path          string        `yaml:"path"`
 	FallThreshold int           `yaml:"fall_threshold"`
 	RiseThreshold int           `yaml:"rise_threshold"`
+}
+
+type LogConfig struct {
+	Level slog.Level `yaml:"level"`
 }
 
 func defaults() Config {

@@ -12,7 +12,10 @@ import (
 	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
 )
 
-const maxAcquireAttempts = 3
+const (
+	maxAcquireAttempts        = 3
+	statusClientClosedRequest = 499
+)
 
 type ctxKey struct{}
 
@@ -88,6 +91,7 @@ func (p *Proxy) acquire() (*backend.Backend, error) {
 
 func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	if errors.Is(err, context.Canceled) {
+		w.WriteHeader(statusClientClosedRequest)
 		return
 	}
 
@@ -96,18 +100,23 @@ func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {
 		backendURL = be.URL.String()
 	}
 
+	var netErr net.Error
+	if errors.Is(err, context.DeadlineExceeded) || (errors.As(err, &netErr) && netErr.Timeout()) {
+		p.logger.Warn("upstream request timed out",
+			"backend", backendURL,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"error", err,
+		)
+		http.Error(w, "upstream timeout", http.StatusGatewayTimeout)
+		return
+	}
+
 	p.logger.Error("upstream request failed",
 		"backend", backendURL,
 		"method", r.Method,
 		"path", r.URL.Path,
 		"error", err,
 	)
-
-	var netErr net.Error
-	if errors.Is(err, context.DeadlineExceeded) || (errors.As(err, &netErr) && netErr.Timeout()) {
-		http.Error(w, "upstream timeout", http.StatusGatewayTimeout)
-		return
-	}
-
 	http.Error(w, "upstream server error", http.StatusBadGateway)
 }

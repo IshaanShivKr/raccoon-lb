@@ -127,7 +127,10 @@ func (c *Checker) checkOne(ctx context.Context, b *backend.Backend) {
 		s.oks++
 		if !b.IsHealthy() && s.oks >= c.riseThreshold {
 			b.SetHealthy(true)
-			c.logger.Info("backend recovered", "backend", b.URL.String())
+			c.logger.Info("backend recovered",
+				"backend", b.URL.String(),
+				"consecutive_successes", s.oks,
+			)
 		}
 		return
 	}
@@ -139,9 +142,16 @@ func (c *Checker) checkOne(ctx context.Context, b *backend.Backend) {
 		c.logger.Warn("backend unhealthy",
 			"backend", b.URL.String(),
 			"consecutive_failures", s.fails,
-			"reason", err,
+			"error", err,
 		)
+		return
 	}
+
+	c.logger.Debug("health check failed",
+		"backend", b.URL.String(),
+		"consecutive_failures", s.fails,
+		"error", err,
+	)
 }
 
 func (c *Checker) probe(ctx context.Context, b *backend.Backend) error {

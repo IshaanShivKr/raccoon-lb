@@ -14,14 +14,16 @@ import (
 	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
 	"github.com/IshaanShivKr/raccoon-lb/internal/config"
 	"github.com/IshaanShivKr/raccoon-lb/internal/health"
+	"github.com/IshaanShivKr/raccoon-lb/internal/middleware"
 	"github.com/IshaanShivKr/raccoon-lb/internal/proxy"
 )
 
 const configPath = "configs/config.yaml"
 
 func main() {
+	level := new(slog.LevelVar)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: level,
 	}))
 
 	cfg, err := config.Load(configPath)
@@ -29,6 +31,8 @@ func main() {
 		logger.Error("failed to load configuration", "error", err)
 		os.Exit(1)
 	}
+
+	level.Set(cfg.Log.Level)
 
 	if err := run(logger, cfg); err != nil {
 		logger.Error("application failed", "error", err)
@@ -39,12 +43,12 @@ func main() {
 func run(logger *slog.Logger, cfg *config.Config) error {
 	backends := make([]*backend.Backend, 0, len(cfg.BackendURLs))
 	for _, u := range cfg.BackendURLs {
-		backends = append(backends, &backend.Backend{URL: u})
+		backends = append(backends, &backend.Backend{URL: u, Logger: logger})
 	}
 
 	pool := backend.NewPool(backends)
 	lb := balancer.NewRoundRobin(pool)
-	handler := proxy.New(lb, logger)
+	handler := middleware.Logging(logger, proxy.New(lb, logger))
 
 	checker, err := health.New(
 		pool,
