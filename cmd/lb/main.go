@@ -68,6 +68,9 @@ func run(logger *slog.Logger, cfg *config.Config) error {
 
 	case config.AlgorithmP2C:
 		lb = balancer.NewPowerOfTwoChoices(pool)
+
+	case config.AlgorithmWeightedP2C:
+		lb = balancer.NewWeightedP2C(pool)
 	}
 
 	handler := middleware.Logging(logger, proxy.New(lb, logger))
