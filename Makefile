@@ -1,17 +1,21 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help build build-linux-amd64 build-linux-arm64 run clean fmt vet check tidy deps all
+.PHONY: help build build-linux-amd64 build-linux-arm64 run clean fmt vet check tidy deps all docker-build docker-up docker-down docker-logs
 
 help:
 	@echo "Raccoon LB"
-	@echo "  make build  - Build binary"
-	@echo "  make run    - Run application"
-	@echo "  make clean  - Remove build artifacts"
-	@echo "  make fmt    - Format Go files"
-	@echo "  make vet    - Run go vet"
-	@echo "  make check  - Run formatting check and vet"
-	@echo "  make tidy   - Tidy dependencies"
-	@echo "  make deps   - Download dependencies"
+	@echo "  make build        - Build binary"
+	@echo "  make run          - Run application"
+	@echo "  make clean        - Remove build artifacts"
+	@echo "  make fmt          - Format Go files"
+	@echo "  make vet          - Run go vet"
+	@echo "  make check        - Run formatting check and vet"
+	@echo "  make tidy         - Tidy dependencies"
+	@echo "  make deps         - Download dependencies"
+	@echo "  make docker-build - Build Docker images"
+	@echo "  make docker-up    - Start the Compose demo stack"
+	@echo "  make docker-down  - Stop the Compose demo stack"
+	@echo "  make docker-logs  - Follow Compose logs"
 
 build:
 	mkdir -p bin
@@ -47,5 +51,17 @@ tidy:
 
 deps:
 	go mod download
+
+docker-build:
+	docker compose build
+
+docker-up:
+	docker compose up -d --build
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f
 
 all: fmt tidy vet build
