@@ -56,6 +56,12 @@ func run(logger *slog.Logger, cfg *config.Config) error {
 
 	case config.AlgorithmLeastConnections:
 		lb = balancer.NewLeastConnections(pool)
+
+	case config.AlgorithmWeightedRoundRobin:
+		lb = balancer.NewWeightedRoundRobin(pool)
+
+	case config.AlgorithmWeightedLeastConnections:
+		lb = balancer.NewWeightedLeastConnections(pool)
 	}
 
 	handler := middleware.Logging(logger, proxy.New(lb, logger))

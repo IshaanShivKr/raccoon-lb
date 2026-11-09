@@ -8,6 +8,7 @@ import (
 
 type Backend struct {
 	URL       *url.URL
+	Weight    int
 	Logger    *slog.Logger
 	mu        sync.Mutex
 	unhealthy bool

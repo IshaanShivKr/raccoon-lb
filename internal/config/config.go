@@ -15,17 +15,19 @@ import (
 )
 
 const (
-	AlgorithmRoundRobin       = "round_robin"
-	AlgorithmLeastConnections = "least_connections"
+	AlgorithmRoundRobin               = "round_robin"
+	AlgorithmLeastConnections         = "least_connections"
+	AlgorithmWeightedRoundRobin       = "weighted_round_robin"
+	AlgorithmWeightedLeastConnections = "weighted_least_connections"
 )
 
 type Config struct {
-	Server      ServerConfig   `yaml:"server"`
-	Backends    []string       `yaml:"backends"`
-	Balancer    BalancerConfig `yaml:"balancer"`
-	Health      HealthConfig   `yaml:"health"`
-	Log         LogConfig      `yaml:"log"`
-	BackendURLs []*url.URL     `yaml:"-"`
+	Server      ServerConfig    `yaml:"server"`
+	Backends    []BackendConfig `yaml:"backends"`
+	Balancer    BalancerConfig  `yaml:"balancer"`
+	Health      HealthConfig    `yaml:"health"`
+	Log         LogConfig       `yaml:"log"`
+	BackendURLs []*url.URL      `yaml:"-"`
 }
 
 type ServerConfig struct {
@@ -35,6 +37,12 @@ type ServerConfig struct {
 	WriteTimeout      time.Duration `yaml:"write_timeout"`
 	IdleTimeout       time.Duration `yaml:"idle_timeout"`
 	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout"`
+}
+
+type BackendConfig struct {
+	URL       string   `yaml:"url"`
+	Weight    int      `yaml:"weight"`
+	ParsedURL *url.URL `yaml:"-"`
 }
 
 type BalancerConfig struct {
@@ -120,13 +128,12 @@ func (c *Config) validate() error {
 	positive("server.shutdown_timeout", c.Server.ShutdownTimeout)
 
 	switch c.Balancer.Algorithm {
-	case AlgorithmRoundRobin, AlgorithmLeastConnections:
+	case AlgorithmRoundRobin,
+		AlgorithmLeastConnections,
+		AlgorithmWeightedRoundRobin,
+		AlgorithmWeightedLeastConnections:
 	default:
-		addf("balancer.algorithm must be %q or %q, got %q",
-			AlgorithmRoundRobin,
-			AlgorithmLeastConnections,
-			c.Balancer.Algorithm,
-		)
+		addf("unsupported balancing algorithm: %q", c.Balancer.Algorithm)
 	}
 
 	positive("health.interval", c.Health.Interval)
@@ -145,28 +152,41 @@ func (c *Config) validate() error {
 		addf("backends: at least one backend URL is required")
 	}
 
-	urls := make([]*url.URL, 0, len(c.Backends))
-	seen := make(map[string]int, len(c.Backends))
-	for i, raw := range c.Backends {
-		u, err := parseBackend(raw)
+	seen := make(map[string]struct{}, len(c.Backends))
+
+	for i := range c.Backends {
+		be := &c.Backends[i]
+
+		if be.Weight == 0 {
+			be.Weight = 1
+		}
+
+		if be.Weight < 1 {
+			addf("backends[%d].weight must be positive", i)
+			continue
+		}
+
+		u, err := parseBackend(be.URL)
 		if err != nil {
-			addf("backends[%d] %q: %v", i, raw, err)
+			addf("backends[%d].url: %v", i, err)
 			continue
 		}
+
 		key := backendKey(u)
-		if first, dup := seen[key]; dup {
-			addf("backends[%d] %q: duplicate of backends[%d]", i, raw, first)
+
+		if _, exists := seen[key]; exists {
+			addf("duplicate backend URL %q", be.URL)
 			continue
 		}
-		seen[key] = i
-		urls = append(urls, u)
+
+		seen[key] = struct{}{}
+		be.ParsedURL = u
 	}
 
 	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
 
-	c.BackendURLs = urls
 	return nil
 }
 
