@@ -17,7 +17,7 @@ Raccoon LB distributes incoming HTTP requests across multiple backend servers us
 - [Create your configuration file](#create-your-configuration-file)
 - [Run Raccoon LB](#run-raccoon-lb)
   - [Run the binary](#run-the-binary)
-  - [Run with Docker:](#run-with-docker)
+  - [Run with Docker](#run-with-docker)
 - [Usage](#usage)
 - [Configuration](#configuration)
   - [Server](#server)
@@ -165,7 +165,7 @@ Use the command that matches how you installed it:
   ./bin/raccoon-lb -config config.yaml
   ```
 
-### Run with Docker:
+### Run with Docker
 
 ```bash
 docker run -d \
