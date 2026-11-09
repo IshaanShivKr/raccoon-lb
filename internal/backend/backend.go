@@ -2,49 +2,90 @@ package backend
 
 import (
 	"net/url"
-	"sync/atomic"
+	"sync"
 )
 
 type Backend struct {
 	URL       *url.URL
-	unhealthy atomic.Bool
-	draining  atomic.Bool
-	active    atomic.Int64
+	mu        sync.Mutex
+	unhealthy bool
+	draining  bool
+	active    int64
 }
 
 func (b *Backend) IsHealthy() bool {
-	return !b.unhealthy.Load()
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return !b.unhealthy
 }
 
 func (b *Backend) SetHealthy(healthy bool) {
-	b.unhealthy.Store(!healthy)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	b.unhealthy = !healthy
 }
 
 func (b *Backend) IsDraining() bool {
-	return b.draining.Load()
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.draining
 }
 
 func (b *Backend) Available() bool {
-	return b.IsHealthy() && !b.IsDraining()
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return !b.unhealthy && !b.draining
 }
 
 func (b *Backend) Drain() bool {
-	return b.draining.CompareAndSwap(false, true)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.draining {
+		return false
+	}
+
+	b.draining = true
+	return true
+}
+
+func (b *Backend) Active() int64 {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.active
 }
 
 func (b *Backend) Drained() bool {
-	return b.IsDraining() && b.active.Load() == 0
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.draining && b.active == 0
 }
 
 func (b *Backend) TryAcquire() bool {
-	b.active.Add(1)
-	if !b.Available() {
-		b.active.Add(-1)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.unhealthy || b.draining {
 		return false
 	}
+
+	b.active++
 	return true
 }
 
 func (b *Backend) Release() {
-	b.active.Add(-1)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.active <= 0 {
+		panic("backend: release called without active request")
+	}
+
+	b.active--
 }
