@@ -10,14 +10,14 @@ Raccoon LB distributes incoming HTTP requests across multiple backend servers us
 - [Features](#features)
 - [Load-Balancing Algorithms](#load-balancing-algorithms)
 - [Installation](#installation)
-  - [Option 1: Download a prebuilt binary](#option-1-download-a-prebuilt-binary)
-  - [Option 3: Build Docker image from GitHub](#option-3-build-docker-image-from-github)
-  - [Option 4: Install using Go](#option-4-install-using-go)
+  - [Download a prebuilt binary](#download-a-prebuilt-binary)
+  - [Build Docker image from GitHub](#build-docker-image-from-github)
+  - [Install using Go](#install-using-go)
+  - [Build from Source](#build-from-source)
 - [Create your configuration file](#create-your-configuration-file)
 - [Run Raccoon LB](#run-raccoon-lb)
-  - [Run the binary:](#run-the-binary)
+  - [Run the binary](#run-the-binary)
   - [Run with Docker:](#run-with-docker)
-  - [Run with Go:](#run-with-go)
 - [Usage](#usage)
 - [Configuration](#configuration)
   - [Server](#server)
@@ -57,7 +57,7 @@ Raccoon LB supports eight algorithms:
 ## Installation
 
 
-### Option 1: Download a prebuilt binary
+### Download a prebuilt binary
 
 Download the latest Linux AMD64 release from [GitHub Releases](https://github.com/IshaanShivKr/raccoon-lb/releases).
 
@@ -73,7 +73,7 @@ Make the binary executable:
 chmod +x raccoon-lb
 ```
 
-### Option 2: Build Docker image from GitHub
+### Build Docker image from GitHub
 
 Build the Docker image from the GitHub repository:
 
@@ -81,7 +81,7 @@ Build the Docker image from the GitHub repository:
 docker build -t raccoon-lb https://github.com/IshaanShivKr/raccoon-lb.git
 ```
 
-### Option 3: Install using Go
+### Install using Go
 
 Requires Go 1.27.3 or later.
 
@@ -93,7 +93,7 @@ go install github.com/IshaanShivKr/raccoon-lb/cmd/raccoon-lb@latest
 
 Ensure that your Go binary directory (`$(go env GOPATH)/bin`) is included in your system's `PATH`.
 
-### Option 4: Build from Source
+### Build from Source
 
 Requirements:
 - Go 1.27.3 or later
@@ -132,7 +132,7 @@ cp config.example.yaml config.yaml
 
 Alternatively, you can download config.example.yaml directly from the [GitHub repository](https://github.com/IshaanShivKr/raccoon-lb/blob/main/configs/config.example.yaml).
 
-If you built Raccoon LB from source (Option 4), the example configuration is already available in the configs/ directory. Copy it to your working directory:
+If you built Raccoon LB from source, the example configuration is already available in the configs/ directory. Copy it to your working directory:
 
 ```bash
 cp configs/config.example.yaml config.yaml
