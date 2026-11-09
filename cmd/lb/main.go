@@ -57,17 +57,20 @@ func run(logger *slog.Logger, cfg *config.Config) error {
 	case config.AlgorithmLeastConnections:
 		lb = balancer.NewLeastConnections(pool)
 
+	case config.AlgorithmRandom:
+		lb = balancer.NewRandom(pool)
+
+	case config.AlgorithmP2C:
+		lb = balancer.NewPowerOfTwoChoices(pool)
+
 	case config.AlgorithmWeightedRoundRobin:
 		lb = balancer.NewWeightedRoundRobin(pool)
 
 	case config.AlgorithmWeightedLeastConnections:
 		lb = balancer.NewWeightedLeastConnections(pool)
 
-	case config.AlgorithmRandom:
-		lb = balancer.NewRandom(pool)
-
-	case config.AlgorithmP2C:
-		lb = balancer.NewPowerOfTwoChoices(pool)
+	case config.AlgorithmWeightedRandom:
+		lb = balancer.NewWeightedRandom(pool)
 
 	case config.AlgorithmWeightedP2C:
 		lb = balancer.NewWeightedP2C(pool)

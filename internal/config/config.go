@@ -17,10 +17,11 @@ import (
 const (
 	AlgorithmRoundRobin               = "round_robin"
 	AlgorithmLeastConnections         = "least_connections"
-	AlgorithmWeightedRoundRobin       = "weighted_round_robin"
-	AlgorithmWeightedLeastConnections = "weighted_least_connections"
 	AlgorithmRandom                   = "random"
 	AlgorithmP2C                      = "p2c"
+	AlgorithmWeightedRoundRobin       = "weighted_round_robin"
+	AlgorithmWeightedLeastConnections = "weighted_least_connections"
+	AlgorithmWeightedRandom           = "weighted_random"
 	AlgorithmWeightedP2C              = "weighted_p2c"
 )
 
@@ -137,6 +138,7 @@ func (c *Config) validate() error {
 		AlgorithmP2C,
 		AlgorithmWeightedRoundRobin,
 		AlgorithmWeightedLeastConnections,
+		AlgorithmWeightedRandom,
 		AlgorithmWeightedP2C:
 	default:
 		addf("unsupported balancing algorithm: %q", c.Balancer.Algorithm)
