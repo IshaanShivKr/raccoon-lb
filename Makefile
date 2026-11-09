@@ -14,10 +14,10 @@ help:
 
 build:
 	mkdir -p bin
-	go build -trimpath -o bin/raccoon-lb ./cmd/lb
+	go build -trimpath -o bin/raccoon-lb ./cmd/raccoon-lb
 
 run:
-	go run ./cmd/lb
+	go run ./cmd/raccoon-lb
 
 clean:
 	rm -rf bin
