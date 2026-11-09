@@ -1,0 +1,10 @@
+.git
+.gitignore
+bin/
+Dockerfile
+.dockerignore
+README.md
+**/*.md
+.env
+**/.env
+**/.npmrc
