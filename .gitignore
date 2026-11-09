@@ -1,2 +1,5 @@
 # Build output directory
 /bin/
+
+# Compiled release binaries and archives
+/dist/
