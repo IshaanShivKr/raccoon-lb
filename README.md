@@ -73,15 +73,15 @@ Make the binary executable:
 chmod +x raccoon-lb
 ```
 
-### Build Docker image from GitHub
+### Pull the Docker image
 
-Build the Docker image from the GitHub repository:
+Pull the latest Raccoon LB image from GitHub Container Registry:
 
 ```bash
-docker build -t raccoon-lb https://github.com/IshaanShivKr/raccoon-lb.git
+docker pull ghcr.io/ishaanshivkr/raccoon-lb:latest
 ```
 
-### Install using Go
+### Install with Go
 
 Requires Go 1.27.3 or later.
 
@@ -96,6 +96,7 @@ Ensure that your Go binary directory (`$(go env GOPATH)/bin`) is included in you
 ### Build from Source
 
 Requirements:
+
 - Go 1.27.3 or later
 - Git
 - Make (optional)
@@ -172,7 +173,7 @@ docker run -d \
   -p 8080:8080 \
   -v "$(pwd)/config.yaml:/etc/raccoon-lb/config.yaml:ro" \
   --restart unless-stopped \
-  raccoon-lb
+  ghcr.io/ishaanshivkr/raccoon-lb:latest
 ```
 
 Check the container logs:
