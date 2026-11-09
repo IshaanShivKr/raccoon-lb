@@ -11,6 +11,7 @@ Raccoon LB distributes incoming HTTP requests across multiple backend servers us
 - [Load-Balancing Algorithms](#load-balancing-algorithms)
 - [Installation](#installation)
   - [Option 1: Download a prebuilt binary](#option-1-download-a-prebuilt-binary)
+  - [Option 3: Build Docker image from GitHub](#option-3-build-docker-image-from-github)
 - [Configuration](#configuration)
   - [Server](#server)
   - [Balancer](#balancer)
@@ -79,6 +80,57 @@ Run Raccoon LB:
 ```bash
 ./raccoon-lb -config config.yaml
 ```
+
+### Option 3: Build Docker image from GitHub
+
+Build the Docker image from the GitHub repository:
+
+```bash
+docker build -t raccoon-lb https://github.com/IshaanShivKr/raccoon-lb.git
+```
+
+Create your configuration file using the provided example:
+
+```bash
+curl -O https://raw.githubusercontent.com/IshaanShivKr/raccoon-lb/main/configs/config.example.yaml
+cp config.example.yaml config.yaml
+```
+
+Alternatively, you can download `config.example.yaml` directly from the [GitHub repository](https://github.com/IshaanShivKr/raccoon-lb/blob/main/configs/config.example.yaml).
+
+Edit `config.yaml` to configure your backend servers and load-balancing algorithm.
+
+Run Raccoon LB:
+
+```bash
+docker run -d \
+  --name raccoon-lb \
+  -p 8080:8080 \
+  -v "$(pwd)/config.yaml:/etc/raccoon-lb/config.yaml:ro" \
+  --restart unless-stopped \
+  raccoon-lb
+```
+
+Verify that it started:
+
+```bash
+docker logs raccoon-lb
+```
+
+To stop and remove the container:
+
+```bash
+docker stop raccoon-lb && docker rm raccoon-lb
+```
+
+Raccoon LB is now available on port 8080 of the machine running Docker (for example, `http://localhost:8080` locally, or `http://<server-ip>:8080` on a remote server). If the server has a firewall or cloud security group, allow inbound traffic on port 8080.
+
+> **Note:**
+> - Inside a container, `localhost` refers to the container itself, not the Docker host. Remote backends (AWS, Render, etc.) work with their normal URLs or IP addresses.
+> - For backends running on the Docker host, use the host's IP address. On Linux, you can instead add `--add-host=host.docker.internal:host-gateway` to the `docker run` command and use `host.docker.internal` in the backend URL.
+> - The `-p 8080:8080` mapping assumes your configuration uses port 8080. If you change the listening port, update the container-side port accordingly.
+> - If the container exits with a permission error, make sure `config.yaml` is readable by others: `chmod 644 config.yaml`.
+
 
 ## Configuration
 
