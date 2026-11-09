@@ -12,12 +12,18 @@ Raccoon LB distributes incoming HTTP requests across multiple backend servers us
 - [Installation](#installation)
   - [Option 1: Download a prebuilt binary](#option-1-download-a-prebuilt-binary)
   - [Option 3: Build Docker image from GitHub](#option-3-build-docker-image-from-github)
+  - [Option 4: Install using Go](#option-4-install-using-go)
+- [Create your configuration file](#create-your-configuration-file)
+- [Run Raccoon LB](#run-raccoon-lb)
+  - [Run the binary:](#run-the-binary)
+  - [Run with Docker:](#run-with-docker)
+  - [Run with Go:](#run-with-go)
+- [Usage](#usage)
 - [Configuration](#configuration)
   - [Server](#server)
   - [Balancer](#balancer)
   - [Backends](#backends)
   - [Health Checking](#health-checking)
-- [Usage](#usage)
 - [Project Structure](#project-structure)
 - [License](#license)
 
@@ -67,20 +73,6 @@ Make the binary executable:
 chmod +x raccoon-lb
 ```
 
-Create your configuration file using the provided example:
-
-```bash
-cp config.example.yaml config.yaml
-```
-
-Edit `config.yaml` to configure your backend servers and load-balancing algorithm.
-
-Run Raccoon LB:
-
-```bash
-./raccoon-lb -config config.yaml
-```
-
 ### Option 3: Build Docker image from GitHub
 
 Build the Docker image from the GitHub repository:
@@ -89,18 +81,40 @@ Build the Docker image from the GitHub repository:
 docker build -t raccoon-lb https://github.com/IshaanShivKr/raccoon-lb.git
 ```
 
-Create your configuration file using the provided example:
+### Option 4: Install using Go
+
+Requires Go 1.27.3 or later.
+
+Install Raccoon LB using `go install`:
+
+```bash
+go install github.com/IshaanShivKr/raccoon-lb/cmd/raccoon-lb@latest
+```
+
+Ensure that your Go binary directory (`$(go env GOPATH)/bin`) is included in your system's `PATH`.
+
+## Create your configuration file
+
+Download the example configuration:
 
 ```bash
 curl -O https://raw.githubusercontent.com/IshaanShivKr/raccoon-lb/main/configs/config.example.yaml
 cp config.example.yaml config.yaml
 ```
 
-Alternatively, you can download `config.example.yaml` directly from the [GitHub repository](https://github.com/IshaanShivKr/raccoon-lb/blob/main/configs/config.example.yaml).
+Alternatively, you can download config.example.yaml directly from the [GitHub repository](https://github.com/IshaanShivKr/raccoon-lb/blob/main/configs/config.example.yaml).
 
-Edit `config.yaml` to configure your backend servers and load-balancing algorithm.
+Edit config.yaml to configure your backend servers and load-balancing algorithm. See [Configuration](#configuration) for details about all available fields.
 
-Run Raccoon LB:
+## Run Raccoon LB
+
+### Run the binary:
+
+```bash
+./raccoon-lb -config config.yaml
+```
+
+### Run with Docker:
 
 ```bash
 docker run -d \
@@ -119,12 +133,29 @@ docker logs raccoon-lb
 
 Raccoon LB is now accessible on port 8080 of the machine running Docker. Ensure the port is allowed through your firewall or cloud security group.
 
-
 To stop and remove the container:
 
 ```bash
 docker stop raccoon-lb && docker rm raccoon-lb
 ```
+
+### Run with Go:
+
+```bash
+raccoon-lb -config config.yaml
+```
+
+## Usage
+
+Once Raccoon LB is running, send HTTP requests to its listening address.
+
+For example:
+
+```bash
+curl http://localhost:8080/foo/bar
+```
+
+Raccoon LB forwards the request to a selected backend, preserving the request path.
 
 ## Configuration
 
@@ -207,24 +238,12 @@ Each backend has:
 
 Raccoon LB periodically sends HTTP requests to each backend's configured health-check endpoint. Unhealthy backends are excluded from request distribution and can rejoin once they recover.
 
-## Usage
-
-Once Raccoon LB is running, send HTTP requests to its listening address.
-
-For example:
-
-```bash
-curl http://localhost:8080/foo/bar
-```
-
-Raccoon LB forwards the request to a selected backend, preserving the request path.
-
 ## Project Structure
 
 ```text
 raccoon-lb/
 ├── cmd/
-│   └── lb/
+│   └── raccoon-lb/
 ├── configs/
 │   └── config.example.yaml
 ├── internal/
