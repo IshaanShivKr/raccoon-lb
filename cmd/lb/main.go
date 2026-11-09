@@ -47,7 +47,17 @@ func run(logger *slog.Logger, cfg *config.Config) error {
 	}
 
 	pool := backend.NewPool(backends)
-	lb := balancer.NewRoundRobin(pool)
+
+	var lb balancer.Balancer
+
+	switch cfg.Balancer.Algorithm {
+	case config.AlgorithmRoundRobin:
+		lb = balancer.NewRoundRobin(pool)
+
+	case config.AlgorithmLeastConnections:
+		lb = balancer.NewLeastConnections(pool)
+	}
+
 	handler := middleware.Logging(logger, proxy.New(lb, logger))
 
 	checker, err := health.New(

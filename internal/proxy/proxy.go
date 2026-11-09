@@ -61,7 +61,7 @@ func New(b balancer.Balancer, logger *slog.Logger) *Proxy {
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	be, err := p.acquire()
+	be, err := p.acquire(r)
 	if err != nil {
 		if errors.Is(err, balancer.ErrNoAvailableBackends) {
 			http.Error(w, "no available backends", http.StatusServiceUnavailable)
@@ -76,9 +76,9 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.rp.ServeHTTP(w, r.WithContext(withBackend(r.Context(), be)))
 }
 
-func (p *Proxy) acquire() (*backend.Backend, error) {
+func (p *Proxy) acquire(r *http.Request) (*backend.Backend, error) {
 	for range maxAcquireAttempts {
-		be, err := p.balancer.Next()
+		be, err := p.balancer.Next(r)
 		if err != nil {
 			return nil, err
 		}

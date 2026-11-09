@@ -6,6 +6,9 @@ server:
   idle_timeout: 60s
   shutdown_timeout: 10s
 
+balancer:
+  algorithm: round_robin
+
 backends:
   - http://localhost:9001
   - http://localhost:9002

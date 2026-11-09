@@ -14,12 +14,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	AlgorithmRoundRobin       = "round_robin"
+	AlgorithmLeastConnections = "least_connections"
+)
+
 type Config struct {
-	Server      ServerConfig `yaml:"server"`
-	Backends    []string     `yaml:"backends"`
-	Health      HealthConfig `yaml:"health"`
-	Log         LogConfig    `yaml:"log"`
-	BackendURLs []*url.URL   `yaml:"-"`
+	Server      ServerConfig   `yaml:"server"`
+	Backends    []string       `yaml:"backends"`
+	Balancer    BalancerConfig `yaml:"balancer"`
+	Health      HealthConfig   `yaml:"health"`
+	Log         LogConfig      `yaml:"log"`
+	BackendURLs []*url.URL     `yaml:"-"`
 }
 
 type ServerConfig struct {
@@ -29,6 +35,10 @@ type ServerConfig struct {
 	WriteTimeout      time.Duration `yaml:"write_timeout"`
 	IdleTimeout       time.Duration `yaml:"idle_timeout"`
 	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout"`
+}
+
+type BalancerConfig struct {
+	Algorithm string `yaml:"algorithm"`
 }
 
 type HealthConfig struct {
@@ -52,6 +62,9 @@ func defaults() Config {
 			WriteTimeout:      60 * time.Second,
 			IdleTimeout:       60 * time.Second,
 			ShutdownTimeout:   10 * time.Second,
+		},
+		Balancer: BalancerConfig{
+			Algorithm: AlgorithmRoundRobin,
 		},
 		Health: HealthConfig{
 			Interval:      5 * time.Second,
@@ -105,6 +118,16 @@ func (c *Config) validate() error {
 	positive("server.write_timeout", c.Server.WriteTimeout)
 	positive("server.idle_timeout", c.Server.IdleTimeout)
 	positive("server.shutdown_timeout", c.Server.ShutdownTimeout)
+
+	switch c.Balancer.Algorithm {
+	case AlgorithmRoundRobin, AlgorithmLeastConnections:
+	default:
+		addf("balancer.algorithm must be %q or %q, got %q",
+			AlgorithmRoundRobin,
+			AlgorithmLeastConnections,
+			c.Balancer.Algorithm,
+		)
+	}
 
 	positive("health.interval", c.Health.Interval)
 	positive("health.timeout", c.Health.Timeout)
