@@ -4,20 +4,20 @@
 
 help:
 	@echo "Raccoon LB"
-	@echo "  make build  - Build binary"
-	@echo "  make run    - Run application"
-	@echo "  make clean  - Remove build artifacts"
-	@echo "  make fmt    - Format Go files"
-	@echo "  make vet    - Run go vet"
-	@echo "  make check  - Run formatting check, vet and build"
-	@echo "  make tidy   - Tidy dependencies"
+	@echo "  make build              - Build binary"
+	@echo "  make run CONFIG=<path>  - Run application"
+	@echo "  make clean              - Remove build artifacts"
+	@echo "  make fmt                - Format Go files"
+	@echo "  make vet                - Run go vet"
+	@echo "  make check              - Run formatting check, vet and build"
+	@echo "  make tidy               - Tidy dependencies"
 
 build:
 	mkdir -p bin
 	go build -trimpath -o bin/raccoon-lb ./cmd/raccoon-lb
 
 run:
-	go run ./cmd/raccoon-lb
+	go run ./cmd/raccoon-lb -config $(CONFIG)
 
 clean:
 	rm -rf bin
