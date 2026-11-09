@@ -117,15 +117,14 @@ Check the container logs:
 docker logs raccoon-lb
 ```
 
+Raccoon LB is now accessible on port 8080 of the machine running Docker. Ensure the port is allowed through your firewall or cloud security group.
+
 
 To stop and remove the container:
 
 ```bash
 docker stop raccoon-lb && docker rm raccoon-lb
 ```
-
-Raccoon LB is now accessible on port 8080 of the machine running Docker. Ensure the port is allowed through your firewall or cloud security group
-
 
 ## Configuration
 
