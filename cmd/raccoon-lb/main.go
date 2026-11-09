@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -21,12 +22,16 @@ import (
 
 var configPath = flag.String(
 	"config",
-	"configs/config.yaml",
+	"",
 	"path to configuration file",
 )
 
 func main() {
 	flag.Parse()
+
+	if *configPath == "" {
+        log.Fatal("configuration file is required; use -config <path>")
+    }
 
 	level := new(slog.LevelVar)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
