@@ -15,9 +15,7 @@ type WeightedLeastConnections struct {
 var _ Balancer = (*WeightedLeastConnections)(nil)
 
 func NewWeightedLeastConnections(pool *backend.Pool) *WeightedLeastConnections {
-	return &WeightedLeastConnections{
-		pool: pool,
-	}
+	return &WeightedLeastConnections{pool: pool}
 }
 
 func (wlc *WeightedLeastConnections) Next(_ *http.Request) (*backend.Backend, error) {
