@@ -117,12 +117,19 @@ func (c *Config) validate() error {
 	}
 
 	urls := make([]*url.URL, 0, len(c.Backends))
+	seen := make(map[string]int, len(c.Backends))
 	for i, raw := range c.Backends {
 		u, err := parseBackend(raw)
 		if err != nil {
 			addf("backends[%d] %q: %v", i, raw, err)
 			continue
 		}
+		key := backendKey(u)
+		if first, dup := seen[key]; dup {
+			addf("backends[%d] %q: duplicate of backends[%d]", i, raw, first)
+			continue
+		}
+		seen[key] = i
 		urls = append(urls, u)
 	}
 
@@ -152,4 +159,8 @@ func parseBackend(raw string) (*url.URL, error) {
 		}
 	}
 	return u, nil
+}
+
+func backendKey(u *url.URL) string {
+	return u.Scheme + "://" + strings.ToLower(u.Host) + strings.TrimRight(u.EscapedPath(), "/")
 }

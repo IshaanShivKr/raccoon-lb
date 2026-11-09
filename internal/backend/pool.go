@@ -16,11 +16,11 @@ func (p *Pool) All() []*Backend {
 	return out
 }
 
-func (p *Pool) Healthy() []*Backend {
+func (p *Pool) Available() []*Backend {
 	out := make([]*Backend, 0, len(p.backends))
 
 	for _, b := range p.backends {
-		if b.IsHealthy() {
+		if b.Available() {
 			out = append(out, b)
 		}
 	}

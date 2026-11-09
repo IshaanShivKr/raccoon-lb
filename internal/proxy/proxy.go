@@ -12,6 +12,8 @@ import (
 	"github.com/IshaanShivKr/raccoon-lb/internal/balancer"
 )
 
+const maxAcquireAttempts = 3
+
 type ctxKey struct{}
 
 func withBackend(ctx context.Context, be *backend.Backend) context.Context {
@@ -56,9 +58,9 @@ func New(b balancer.Balancer, logger *slog.Logger) *Proxy {
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	be, err := p.balancer.Next()
+	be, err := p.acquire()
 	if err != nil {
-		if errors.Is(err, balancer.ErrNoHealthyBackends) {
+		if errors.Is(err, balancer.ErrNoAvailableBackends) {
 			http.Error(w, "no available backends", http.StatusServiceUnavailable)
 			return
 		}
@@ -66,8 +68,22 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	defer be.Release()
 
 	p.rp.ServeHTTP(w, r.WithContext(withBackend(r.Context(), be)))
+}
+
+func (p *Proxy) acquire() (*backend.Backend, error) {
+	for range maxAcquireAttempts {
+		be, err := p.balancer.Next()
+		if err != nil {
+			return nil, err
+		}
+		if be.TryAcquire() {
+			return be, nil
+		}
+	}
+	return nil, balancer.ErrNoAvailableBackends
 }
 
 func (p *Proxy) handleError(w http.ResponseWriter, r *http.Request, err error) {

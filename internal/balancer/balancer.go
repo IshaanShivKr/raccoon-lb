@@ -6,7 +6,7 @@ import (
 	"github.com/IshaanShivKr/raccoon-lb/internal/backend"
 )
 
-var ErrNoHealthyBackends = errors.New("no healthy backends available")
+var ErrNoAvailableBackends = errors.New("no available backends")
 
 type Balancer interface {
 	Next() (*backend.Backend, error)

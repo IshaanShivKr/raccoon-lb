@@ -20,10 +20,10 @@ func NewRoundRobin(pool *backend.Pool) *RoundRobin {
 }
 
 func (rr *RoundRobin) Next() (*backend.Backend, error) {
-	backends := rr.pool.Healthy()
+	backends := rr.pool.Available()
 
 	if len(backends) == 0 {
-		return nil, ErrNoHealthyBackends
+		return nil, ErrNoAvailableBackends
 	}
 
 	index := rr.counter.Add(1) - 1
