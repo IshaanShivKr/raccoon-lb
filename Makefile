@@ -1,39 +1,38 @@
+
 .DEFAULT_GOAL := help
 
-.PHONY: help build build-linux-amd64 build-linux-arm64 run clean fmt vet check tidy deps all docker-build docker-up docker-down docker-logs
+.PHONY: help build build-linux-amd64 build-linux-arm64 run clean fmt vet check tidy deps all
 
 help:
 	@echo "Raccoon LB"
-	@echo "  make build        - Build binary"
-	@echo "  make run          - Run application"
-	@echo "  make clean        - Remove build artifacts"
-	@echo "  make fmt          - Format Go files"
-	@echo "  make vet          - Run go vet"
-	@echo "  make check        - Run formatting check and vet"
-	@echo "  make tidy         - Tidy dependencies"
-	@echo "  make deps         - Download dependencies"
-	@echo "  make docker-build - Build Docker images"
-	@echo "  make docker-up    - Start the Compose demo stack"
-	@echo "  make docker-down  - Stop the Compose demo stack"
-	@echo "  make docker-logs  - Follow Compose logs"
+	@echo "  make build              - Build binary for current platform"
+	@echo "  make build-linux-amd64  - Build Linux AMD64 binary"
+	@echo "  make build-linux-arm64  - Build Linux ARM64 binary"
+	@echo "  make run                - Run application"
+	@echo "  make clean              - Remove build artifacts"
+	@echo "  make fmt                - Format Go files"
+	@echo "  make vet                - Run go vet"
+	@echo "  make check              - Run formatting check, vet and build"
+	@echo "  make tidy               - Tidy dependencies"
+	@echo "  make deps               - Download dependencies"
 
 build:
 	mkdir -p bin
 	go build -trimpath -o bin/lb ./cmd/lb
 
 build-linux-amd64:
-	mkdir -p bin
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -o bin/raccoon-lb-linux-amd64 ./cmd/lb
+	mkdir -p dist
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o dist/raccoon-lb-linux-amd64 ./cmd/lb
 
 build-linux-arm64:
-	mkdir -p bin
-	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o bin/raccoon-lb-linux-arm64 ./cmd/lb
+	mkdir -p dist
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/raccoon-lb-linux-arm64 ./cmd/lb
 
 run:
 	go run ./cmd/lb
 
 clean:
-	rm -rf bin
+	rm -rf bin dist
 
 fmt:
 	gofmt -w .
@@ -51,17 +50,5 @@ tidy:
 
 deps:
 	go mod download
-
-docker-build:
-	docker compose build
-
-docker-up:
-	docker compose up -d --build
-
-docker-down:
-	docker compose down
-
-docker-logs:
-	docker compose logs -f
 
 all: fmt tidy vet build
