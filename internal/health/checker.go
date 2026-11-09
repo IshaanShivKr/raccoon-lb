@@ -174,7 +174,7 @@ func (c *Checker) probe(ctx context.Context, b *backend.Backend) error {
 
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, maxDrainBytes))
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return fmt.Errorf("unexpected status %d", resp.StatusCode)
 	}
 
