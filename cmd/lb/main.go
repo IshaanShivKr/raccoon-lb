@@ -48,9 +48,13 @@ func main() {
 }
 
 func run(logger *slog.Logger, cfg *config.Config) error {
-	backends := make([]*backend.Backend, 0, len(cfg.BackendURLs))
-	for _, u := range cfg.BackendURLs {
-		backends = append(backends, &backend.Backend{URL: u, Logger: logger})
+	backends := make([]*backend.Backend, 0, len(cfg.Backends))
+	for _, be := range cfg.Backends {
+		backends = append(backends, &backend.Backend{
+			URL:    be.ParsedURL,
+			Weight: be.Weight,
+			Logger: logger,
+		})
 	}
 
 	pool := backend.NewPool(backends)
