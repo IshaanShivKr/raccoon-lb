@@ -1,6 +1,12 @@
-# Raccoon LB
+<p align="center">
+  <img src="assets/raccoon.svg" width="120" alt="Raccoon LB mascot">
+</p>
 
-A Layer 7 HTTP load balancer and reverse proxy written in Go.
+<h1 align="center">Raccoon LB</h1>
+
+<p align="center">
+  A Layer 7 HTTP load balancer and reverse proxy written in Go.
+</p>
 
 Raccoon LB distributes incoming HTTP requests across multiple backend servers using configurable load-balancing algorithms. It includes active health checking, weighted backend selection, concurrent request handling, and graceful shutdown.
 
