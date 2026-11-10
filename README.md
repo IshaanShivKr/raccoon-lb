@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/raccoon.svg" width="120" alt="Raccoon LB mascot">
+  <img src="assets/raccoon.svg" width="180" alt="Raccoon LB mascot">
 </p>
 
 <h1 align="center">Raccoon LB</h1>
